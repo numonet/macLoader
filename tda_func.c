@@ -82,7 +82,7 @@ unsigned int tda_modemInit(void)
     memset(rbuffer, 0, sizeof(rbuffer));
     detected = loop = 0;
     // Uart 2
-    if (Com_Init(uart_dev, 9600, 8, 1, 'N') == 0) {
+    if (Com_Init(uart_dev, 115200, 8, 1, 'N') == 0) {
         Com_ConfigureTimeout(0);
 
             // Read log data if it outputs...

@@ -195,9 +195,9 @@ static unsigned int Loader_Monitor(char* monitor_payload, char* monitorData)
 static unsigned int Loader_Exec(char* exec_payload)
 {
     int flag, temp, status, err;
-    float pktrate;
+    float pktrate, slot_time;
     char* ptr;
-    char macProtocol[2], xid[4], masterAddr[4], packetrate[8];
+    char macProtocol[2], xid[4], masterAddr[4], packetrate[8], slotTime[8];
 
 
     err = 0;
@@ -209,17 +209,20 @@ static unsigned int Loader_Exec(char* exec_payload)
         memset(masterAddr, 0, sizeof(masterAddr));
         memset(packetrate, 0, sizeof(packetrate));
         memset(macProtocol, 0, sizeof(macProtocol));
+        memset(slotTime, 0, sizeof(slotTime));
         macProtocol[0] = ptr[1] + 0x30;
         sprintf(xid, "%d", ptr[2]);
         sprintf(masterAddr, "%d", ptr[3]);
         temp = ((int)ptr[4] << 24) + ((int)ptr[5] << 16) + ((int)ptr[6] << 8) + (int)ptr[7];
         pktrate = ((float)temp / 10000);
         sprintf(packetrate, "%.4f", pktrate);
-        
+        temp = ((int)ptr[8] << 24) + ((int)ptr[9] << 16) + ((int)ptr[10] << 8) + (int)ptr[11];
+        slot_time = ((float)temp / 10000);
+        sprintf(slotTime, "%.4f", slot_time);
         // Check the executive file
         if (Loader_CheckELF(EXEC_ORIGINAL) == 0) {
             if (wait_pid == -1) {
-                printf("Run...Parameters: %s, %s, %s, %s.\r\n", macProtocol, xid, masterAddr, packetrate);
+                printf("Run...Parameters: %s, %s, %s, %s, %s.\r\n", macProtocol, xid, masterAddr, packetrate, slotTime);
                 if ((pid = fork()) < 0) {
                     err = 1;
                     printf("Create new progress failed.\r\n");
@@ -230,7 +233,7 @@ static unsigned int Loader_Exec(char* exec_payload)
                         execl("/root/macComm", "macComm", NULL);
                     }
                     else {
-                        execl("/root/macComm", " ", "-protocol", macProtocol, "-xid", xid, "-master", masterAddr, "-packetrate", packetrate, NULL);
+                        execl("/root/macComm", " ", "-protocol", macProtocol, "-xid", xid, "-master", masterAddr, "-packetrate", packetrate, "-slot", slotTime, NULL);
                     }
                 }
             }   
